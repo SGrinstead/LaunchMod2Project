@@ -1,3 +1,5 @@
+using MessageLogger.Models;
+
 namespace MessageLogger.Tests
 {
     public class MessageTest

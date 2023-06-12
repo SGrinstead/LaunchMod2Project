@@ -1,5 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using MessageLogger;
+using MessageLogger.Models;
 
 Console.WriteLine("Welcome to Message Logger!");
 Console.WriteLine();
