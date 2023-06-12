@@ -1,6 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using MessageLogger.Models;
 
+//add a using context block around most of the program file
+//foreach loops with users will become context.users
 Console.WriteLine("Welcome to Message Logger!");
 Console.WriteLine();
 Console.WriteLine("Let's create a user pofile for you.");
@@ -8,6 +10,7 @@ Console.Write("What is your name? ");
 string name = Console.ReadLine();
 Console.Write("What is your username? (one word, no spaces!) ");
 string username = Console.ReadLine();
+//context.users.add then savechanges to add created user to the database
 User user = new User(name, username);
 
 Console.WriteLine();
@@ -17,13 +20,15 @@ Console.WriteLine();
 Console.Write("Add a message (or `quit` to exit): ");
 
 string userInput = Console.ReadLine();
+//this can be removed to be replaced by context.users
 List<User> users = new List<User>() { user };
 
 while (userInput.ToLower() != "quit")
 {
     while (userInput.ToLower() != "log out")
-    {
+    { 
         user.Messages.Add(new Message(userInput));
+        //add a savechanges here
 
         foreach (var message in user.Messages)
         {
@@ -44,6 +49,7 @@ while (userInput.ToLower() != "quit")
         name = Console.ReadLine();
         Console.Write("What is your username? (one word, no spaces!) ");
         username = Console.ReadLine();
+        //add to context.users and savechanges
         user = new User(name, username);
         users.Add(user);
         Console.Write("Add a message: ");
@@ -53,6 +59,7 @@ while (userInput.ToLower() != "quit")
     }
     else if (userInput.ToLower() == "existing")
     {
+        //in the future this will find the user in context.users
         Console.Write("What is your username? ");
         username = Console.ReadLine();
         user = null;
