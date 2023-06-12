@@ -22,5 +22,11 @@ namespace MessageLogger.Data
                 "Database=MessageLogger")
                 .UseSnakeCaseNamingConvention();
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>().Navigation(user => user.Messages).AutoInclude();
+            modelBuilder.Entity<Message>().Navigation(message => message.User).AutoInclude();
+        }
     }
 }
