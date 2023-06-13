@@ -7,6 +7,7 @@ using (var context = new MessageLoggerContext())
 {
     Console.WriteLine("Welcome to Message Logger!");
     RunProgram(context);
+    ClosingInfo(context);
 }
 
 static string Format(string s)
@@ -25,10 +26,11 @@ static void HelpMessage()
 
 static void RunProgram(MessageLoggerContext context)
 {
-    User currentUser = NewUser(context);
+    User currentUser = LogIn(context);
 
     HelpMessage();
     string userInput = Console.ReadLine();
+    if (currentUser == null) userInput = "quit";
 
     while (Format(userInput) != "quit")
     {
@@ -43,35 +45,19 @@ static void RunProgram(MessageLoggerContext context)
             userInput = Console.ReadLine();
             Console.WriteLine();
         }
-
-        Console.Write("Would you like to log in a `new` or `existing` user? Or, `quit`? ");
-        userInput = Console.ReadLine();
-        if (userInput.ToLower() == "new")
+        currentUser = LogIn(context);
+        if (currentUser != null)
         {
-            currentUser = NewUser(context);
-
             Console.Write("Add a message: ");
             userInput = Console.ReadLine();
         }
-        else if (Format(userInput) == "existing")
+        else
         {
-            currentUser = LogIn(context);
+            Console.WriteLine("could not find user");
+            userInput = "quit";
 
-            if (currentUser != null)
-            {
-                Console.Write("Add a message: ");
-                userInput = Console.ReadLine();
-            }
-            else
-            {
-                Console.WriteLine("could not find user");
-                userInput = "quit";
-
-            }
         }
-
     }
-    ClosingInfo(context);
 }
 
 static User NewUser(MessageLoggerContext context)
@@ -93,11 +79,11 @@ static void ClosingInfo(MessageLoggerContext context)
     Console.WriteLine("Thanks for using Message Logger!");
     foreach (var u in context.Users)
     {
-        Console.WriteLine($"{u.Name} wrote {u.Messages.Count} messages.");
+        Console.WriteLine($"{u.Name} has written {u.Messages.Count} messages.");
     }
 }
 
-static User LogIn(MessageLoggerContext context)
+static User GetUser(MessageLoggerContext context)
 {
     Console.Write("What is your username? ");
     string username = Console.ReadLine();
@@ -110,4 +96,19 @@ static User LogIn(MessageLoggerContext context)
         }
     }
     return currentUser;
+}
+
+static User LogIn(MessageLoggerContext context)
+{
+    Console.Write("Would you like to log in a `new` or `existing` user? Or, `quit`? ");
+    string userInput = Console.ReadLine();
+    if (Format(userInput) == "new")
+    {
+        return NewUser(context);
+    }
+    else if (Format(userInput) == "existing")
+    {
+        return GetUser(context);
+    }
+    else return null;
 }
