@@ -18,5 +18,13 @@ namespace MessageLogger.Models
             Name = name;
             Username = username;
         }
+
+        public void PrintMessages()
+        {
+            foreach (var message in Messages)
+            {
+                Console.WriteLine($"{Name} {message.CreatedAt:t}: {message.Content}");
+            }
+        }
     }
 }
