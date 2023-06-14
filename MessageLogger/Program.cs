@@ -4,6 +4,7 @@ using MessageLogger.Models;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
+//this is the part that runs the other methods
 using (var context = new MessageLoggerContext())
 {
     Console.WriteLine("Welcome to Message Logger!");
@@ -11,20 +12,7 @@ using (var context = new MessageLoggerContext())
     ClosingInfo(context);
 }
 
-static string Format(string s)
-{
-    return s.ToLower().Replace(" ", "");
-}
-
-static void HelpMessage()
-{
-    Console.WriteLine();
-    Console.WriteLine("To log out of your user profile, enter `log out`.");
-
-    Console.WriteLine();
-    Console.Write("Add a message (or `quit` to exit): ");
-}
-
+//this is where the loops and if statements that run the whole program live
 static void RunProgram(MessageLoggerContext context)
 {
     User currentUser = LogIn(context);
@@ -61,6 +49,25 @@ static void RunProgram(MessageLoggerContext context)
     }
 }
 
+//USER BASED METHODS
+
+//asks whether you want a new or existing user and runs the related method, this runs at the start
+static User LogIn(MessageLoggerContext context)
+{
+    Console.Write("Would you like to log in a `new` or `existing` user? Or, `quit`? ");
+    string userInput = Console.ReadLine();
+    if (Format(userInput) == "new")
+    {
+        return NewUser(context);
+    }
+    else if (Format(userInput) == "existing")
+    {
+        return GetUser(context);
+    }
+    else return null;
+}
+
+//creates a new user and adds them to the database, then returns that user
 static User NewUser(MessageLoggerContext context)
 {
     Console.WriteLine();
@@ -75,6 +82,25 @@ static User NewUser(MessageLoggerContext context)
     return currentUser;
 }
 
+//finds an existing user and returns them
+static User GetUser(MessageLoggerContext context)
+{
+    Console.Write("What is your username? ");
+    string username = Console.ReadLine();
+    User currentUser = null;
+    foreach (var existingUser in context.Users)
+    {
+        if (existingUser.Username == username)
+        {
+            currentUser = existingUser;
+        }
+    }
+    return currentUser;
+}
+
+//STATISTICS METHODS
+
+//prompts the user to see neat statistics, runs related methods
 static void ClosingInfo(MessageLoggerContext context)
 {
     Console.WriteLine("Thanks for using Message Logger!");
@@ -106,36 +132,16 @@ static void ClosingInfo(MessageLoggerContext context)
     }
 }
 
-static User GetUser(MessageLoggerContext context)
+//prints out each user and how many messages they have written
+static void MessageCountByUser(MessageLoggerContext context)
 {
-    Console.Write("What is your username? ");
-    string username = Console.ReadLine();
-    User currentUser = null;
-    foreach (var existingUser in context.Users)
+    foreach (var u in context.Users)
     {
-        if (existingUser.Username == username)
-        {
-            currentUser = existingUser;
-        }
+        Console.WriteLine($"{u.Name} has written {u.Messages.Count} messages.");
     }
-    return currentUser;
 }
 
-static User LogIn(MessageLoggerContext context)
-{
-    Console.Write("Would you like to log in a `new` or `existing` user? Or, `quit`? ");
-    string userInput = Console.ReadLine();
-    if (Format(userInput) == "new")
-    {
-        return NewUser(context);
-    }
-    else if (Format(userInput) == "existing")
-    {
-        return GetUser(context);
-    }
-    else return null;
-}
-
+//prints out each user and how many messages they have written, ordered by that number
 static void UsersOrderedByMessageCount(MessageLoggerContext context)
 {
     var orderedUsers = context.Users.OrderByDescending
@@ -146,6 +152,7 @@ static void UsersOrderedByMessageCount(MessageLoggerContext context)
     }
 }
 
+//prints the hour the most messages were written and the number of messages written in that hour
 static void HourWithMostMessages(MessageLoggerContext context)
 {
     var hours = context.Messages.GroupBy(message => message.CreatedAt.ToLocalTime().Hour);
@@ -162,6 +169,35 @@ static void HourWithMostMessages(MessageLoggerContext context)
     Console.WriteLine($"Hour {hourWithMost} had the most messsages with a count of {messageCount}");
 }
 
+//prints the most commonly used word
+static void MostCommonWord(MessageLoggerContext context)
+{
+    string allWords = AllWords(context);
+    var split = allWords.Split(",");
+    var wordCount = new Dictionary<string, int>();
+
+    foreach (string word in split)
+    {
+        Console.WriteLine(word);
+        string lowerWord = word.ToLower();
+        if (string.IsNullOrEmpty(lowerWord))
+        {
+            continue;
+        }
+        if (!wordCount.ContainsKey(lowerWord))
+        {
+            wordCount.Add(lowerWord, 0);
+        }
+        wordCount[lowerWord]++;
+    }
+    var maxPair = wordCount.First(word => word.Value == wordCount.Max(word => word.Value));
+
+    Console.WriteLine($"The most common word is {maxPair.Key} with {maxPair.Value} uses");
+}
+
+//HELPER METHODS
+
+//returns all words of all messages as a single string with commas separating the words
 static string AllWords(MessageLoggerContext context)
 {
     string allWords = "";
@@ -181,35 +217,18 @@ static string AllWords(MessageLoggerContext context)
     return allWords;
 }
 
-static void MostCommonWord(MessageLoggerContext context)
+//returns string in lowercase with no spaces
+static string Format(string s)
 {
-    string allWords = AllWords(context);
-    var split = allWords.Split(",");
-    var wordCount = new Dictionary<string, int>();
-
-    foreach(string word in split)
-    {
-        Console.WriteLine(word);
-        string lowerWord = word.ToLower();
-        if (string.IsNullOrEmpty(lowerWord))
-        {
-            continue;
-        }
-        if (!wordCount.ContainsKey(lowerWord))
-        {
-            wordCount.Add(lowerWord, 0);
-        }
-        wordCount[lowerWord]++;
-    }
-    var maxPair = wordCount.First(word => word.Value == wordCount.Max(word => word.Value));
-
-    Console.WriteLine($"The most common word is {maxPair.Key} with {maxPair.Value} uses");
+    return s.ToLower().Replace(" ", "");
 }
 
-static void MessageCountByUser(MessageLoggerContext context)
+//info message after logging in
+static void HelpMessage()
 {
-    foreach (var u in context.Users)
-    {
-        Console.WriteLine($"{u.Name} has written {u.Messages.Count} messages.");
-    }
+    Console.WriteLine();
+    Console.WriteLine("To log out of your user profile, enter `log out`.");
+
+    Console.WriteLine();
+    Console.Write("Add a message (or `quit` to exit): ");
 }
