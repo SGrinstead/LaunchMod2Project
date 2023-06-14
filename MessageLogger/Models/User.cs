@@ -23,7 +23,7 @@ namespace MessageLogger.Models
         {
             foreach (var message in Messages)
             {
-                Console.WriteLine($"{Name} {message.CreatedAt:t}: {message.Content}");
+                Console.WriteLine($"{Name} {message.CreatedAt.ToLocalTime():t}: {message.Content}");
             }
         }
     }
