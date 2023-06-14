@@ -61,27 +61,59 @@ static void RunProgram(MessageLoggerContext context)
 static User LogIn(MessageLoggerContext context)
 {
     Console.Write("Would you like to log in a `new` or `existing` user? Or, `quit`? ");
-    string userInput = Console.ReadLine();
-    if (Format(userInput) == "new")
+    string userInput = "";
+    while (Format(userInput) != "quit")
     {
-        return NewUser(context);
+        userInput = Console.ReadLine();
+        if (Format(userInput) == "new")
+        {
+            return NewUser(context);
+        }
+        else if (Format(userInput) == "existing")
+        {
+            return GetUser(context);
+        }
+        else
+        {
+            Console.WriteLine("Input not recognized");
+        }
     }
-    else if (Format(userInput) == "existing")
-    {
-        return GetUser(context);
-    }
-    else return null;
+    return null;
 }
 
 //creates a new user and adds them to the database, then returns that user
 static User NewUser(MessageLoggerContext context)
 {
+    string name = "";
+    string username = "";
     Console.WriteLine();
     Console.WriteLine("Let's create a user pofile for you.");
-    Console.Write("What is your name? ");
-    string name = Console.ReadLine();
-    Console.Write("What is your username? (one word, no spaces!) ");
-    string username = Console.ReadLine();
+    while (name == "")
+    {
+        Console.Write("What is your name? ");
+        name = Console.ReadLine();
+        if(Format(name) == "") Console.WriteLine("Please enter a valid name");
+    }
+    while(username == "")
+    {
+        Console.Write("What is your username? (one word, no spaces!) ");
+        username = Console.ReadLine();
+        if (Format(username) == "")
+        {
+            Console.WriteLine("Please enter a valid name");
+            username = "";
+        }
+        else if (username.Contains(" "))
+        {
+            Console.WriteLine("Please enter a username with no spaces");
+            username = "";
+        }
+        else if(context.Users.Any(user => user.Username == username))
+        {
+            Console.WriteLine("Sorry, that username is already taken");
+            username = "";
+        }
+    }
     User currentUser = new User(name, username);
     context.Users.Add(currentUser);
     context.SaveChanges();
@@ -91,17 +123,24 @@ static User NewUser(MessageLoggerContext context)
 //finds an existing user and returns them
 static User GetUser(MessageLoggerContext context)
 {
-    Console.Write("What is your username? ");
-    string username = Console.ReadLine();
-    User currentUser = null;
-    foreach (var existingUser in context.Users)
+    string username = "";
+    while (true)
     {
-        if (existingUser.Username == username)
+        Console.Write("Please enter your username or 'quit':");
+        username = Console.ReadLine();
+        if(Format(username) == "quit")
         {
-            currentUser = existingUser;
+            return null;
+        }
+        else if(context.Users.Any(user => user.Username == username))
+        {
+            return context.Users.First(user => user.Username == username);
+        }
+        else
+        {
+            Console.WriteLine("Username not recognized");
         }
     }
-    return currentUser;
 }
 
 //STATISTICS METHODS
