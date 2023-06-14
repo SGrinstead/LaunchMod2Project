@@ -16,14 +16,17 @@ using (var context = new MessageLoggerContext())
 static void RunProgram(MessageLoggerContext context)
 {
     User currentUser = LogIn(context);
-
-    HelpMessage();
-    string userInput = Console.ReadLine();
+    string userInput = "";
     if (currentUser == null) userInput = "quit";
-
+    if(userInput != "quit")
+    {
+        HelpMessage();
+        userInput = Console.ReadLine();
+    }
+    
     while (Format(userInput) != "quit")
     {
-        while (Format(userInput) != "logout")
+        while (Format(userInput) != "logout" && Format(userInput) != "quit")
         {
             currentUser.Messages.Add(new Message(userInput));
             context.SaveChanges();
@@ -34,7 +37,10 @@ static void RunProgram(MessageLoggerContext context)
             userInput = Console.ReadLine();
             Console.WriteLine();
         }
-        currentUser = LogIn(context);
+        if(Format(userInput) == "logout")
+        {
+            currentUser = LogIn(context);
+        }     
         if (currentUser != null)
         {
             Console.Write("Add a message: ");
@@ -110,26 +116,37 @@ static void ClosingInfo(MessageLoggerContext context)
     Console.WriteLine("2: Users ordered by the number of messages they have written");
     Console.WriteLine("3: The hour with the most messages written");
     Console.WriteLine("4: The most common word users wrote");
-    Console.WriteLine("5: Quit");
-    string userInput = Console.ReadLine();
-    switch (userInput) 
+    Console.WriteLine("5: quit");
+    string userInput = "";
+    while (userInput != "quit")
     {
-        case "1":
-            MessageCountByUser(context); 
-            break;
-        case "2":
-            UsersOrderedByMessageCount(context);
-            break;
-        case "3":
-            HourWithMostMessages(context);
-            break;
-        case "4":
-            MostCommonWord(context);
-            break;
-        default:
-            Console.WriteLine("Goodbye"); 
-            break;
+        userInput = Console.ReadLine();
+        switch (userInput)
+        {
+            case "1":
+                MessageCountByUser(context);
+                break;
+            case "2":
+                UsersOrderedByMessageCount(context);
+                break;
+            case "3":
+                HourWithMostMessages(context);
+                break;
+            case "4":
+                MostCommonWord(context);
+                break;
+            case "5":
+                userInput = "quit";
+                break;
+            case "quit":
+                userInput = "quit";
+                break;
+            default:
+                Console.WriteLine("Input not recognized");
+                break;
+        }
     }
+    Console.WriteLine("Goodbye");
 }
 
 //prints out each user and how many messages they have written
@@ -178,7 +195,6 @@ static void MostCommonWord(MessageLoggerContext context)
 
     foreach (string word in split)
     {
-        Console.WriteLine(word);
         string lowerWord = word.ToLower();
         if (string.IsNullOrEmpty(lowerWord))
         {
@@ -213,7 +229,6 @@ static string AllWords(MessageLoggerContext context)
             allWords = allWords.Replace(character, ",");
         }
     }
-    Console.WriteLine(allWords);
     return allWords;
 }
 
