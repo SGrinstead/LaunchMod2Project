@@ -40,8 +40,12 @@ static void RunProgram(MessageLoggerContext context)
         if(Format(userInput) == "logout")
         {
             currentUser = LogIn(context);
-        }     
-        if (currentUser != null)
+        }
+        if(Format(userInput) == "quit")
+        {
+            break;
+        }
+        else if (currentUser != null)
         {
             Console.Write("Add a message: ");
             userInput = Console.ReadLine();
@@ -73,7 +77,7 @@ static User LogIn(MessageLoggerContext context)
         {
             return GetUser(context);
         }
-        else
+        else if (Format(userInput) != "quit")
         {
             Console.WriteLine("Input not recognized");
         }
